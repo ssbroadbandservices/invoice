@@ -44,6 +44,29 @@ body {
     z-index: 100;
 }
 
+@media (max-width: 1024px) {
+    .app-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 30px 20px;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 30px 15px !important;
+    }
+
+    .top-bar {
+        justify-content: center !important;
+        flex-wrap: wrap;
+    }
+}
+
 .sidebar::-webkit-scrollbar {
     width: 5px;
 }
@@ -177,14 +200,40 @@ body {
 .invoice-preview {
     background: white;
     width: 800px;
-    min-height: 1130px;
-    /* A4 Ratio */
-    padding: 80px;
+    min-height: 1120px;
+    /* Slightly reduced to fit A4 perfectly */
+    padding: 60px 80px;
+    /* Adjusting padding */
     box-shadow: var(--shadow-strong);
     border-radius: 4px;
     position: relative;
     overflow: hidden;
     transition: transform 0.5s ease;
+    transform-origin: top center;
+}
+
+@media (max-width: 850px) {
+    .invoice-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        padding: 10px;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .invoice-preview {
+        /* We scale it down visually on mobile so user doesn't have to scroll too much */
+        transform: scale(0.6);
+        margin: -200px 0;
+        /* Compensation for scale */
+    }
+}
+
+@media (max-width: 500px) {
+    .invoice-preview {
+        transform: scale(0.4);
+        margin: -350px 0;
+    }
 }
 
 /* Aesthetic accents for the invoice */
