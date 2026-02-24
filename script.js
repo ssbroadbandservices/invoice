@@ -120,16 +120,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // Export Logic
     downloadBtn.addEventListener('click', () => {
         const element = document.getElementById('invoice-preview');
+
+        // Remove transform before capture (especially important for mobile scaling)
+        const originalTransform = element.style.transform;
+        element.style.transform = 'none';
+        element.style.margin = '0';
+
         const opt = {
-            margin: [0, 0],
+            margin: 0,
             filename: `Hybrid_Invoice_${elements.custName.value || 'Client'}.pdf`,
             image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                letterRendering: true,
+                scrollY: 0,
+                scrollX: 0
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: 'avoid-all' } // This helps prevent splitting
         };
 
         downloadBtn.innerHTML = '<span>Processing...</span>';
-        html2pdf().from(element).set(opt).save().then(() => {
+
+        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+            // Additional check to ensure only one page exists
+            const totalPages = pdf.internal.getNumberOfPages();
+            if (totalPages > 1) {
+                for (let i = totalPages; i > 1; i--) {
+                    pdf.deletePage(i);
+                }
+            }
+        }).save().then(() => {
+            // Restore styling
+            element.style.transform = originalTransform;
             downloadBtn.innerHTML = `
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Download Digital PDF`;
