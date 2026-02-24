@@ -1,366 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hybrid Internet - Pro Invoice Generator</title>
-    <!-- PDF Library -->
+    <title>Hybrid Internet | Premium Invoice Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #1e1b4b; /* Navy Blue */
-            --accent: #ff3366;  /* Pink/Red from your logo */
-            --text-main: #334155;
-            --bg-soft: #f1f5f9;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-soft);
-            margin: 0;
-            padding: 20px;
-            color: var(--text-main);
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 30px;
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
-        /* Sidebar Form */
-        .sidebar {
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            height: fit-content;
-            position: sticky;
-            top: 20px;
-        }
-
-        .sidebar h2 { color: var(--primary); margin-bottom: 20px; font-weight: 800; }
-
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--primary); }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: 0.3s;
-        }
-        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(255,51,102,0.1); }
-
-        .btn-download {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        /* Invoice Preview Area */
-        .preview-area {
-            display: flex;
-            justify-content: center;
-            background: #cbd5e1;
-            padding: 40px;
-            border-radius: 16px;
-        }
-
-        #invoice {
-            background: white;
-            width: 210mm;
-            min-height: 297mm;
-            padding: 60px;
-            box-sizing: border-box;
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-        }
-
-        .inv-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 50px;
-        }
-
-        #logo-preview {
-            max-width: 200px;
-            max-height: 80px;
-            object-fit: contain;
-        }
-
-        .comp-meta { text-align: right; font-size: 13px; line-height: 1.6; }
-        .comp-meta strong { font-size: 18px; color: var(--primary); }
-
-        .bill-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            margin-bottom: 40px;
-        }
-
-        .bill-to h3, .inv-info h3 {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #94a3b8;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-        }
-
-        .inv-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-        }
-
-        .inv-table th {
-            background: var(--primary);
-            color: white;
-            text-align: left;
-            padding: 15px;
-            font-size: 14px;
-        }
-
-        .inv-table td {
-            padding: 20px 15px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 14px;
-        }
-
-        .total-box {
-            margin-left: auto;
-            width: 250px;
-            margin-top: 30px;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            font-size: 15px;
-        }
-
-        .grand-total {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--primary);
-            border-top: 2px solid var(--primary);
-            margin-top: 10px;
-            padding-top: 15px;
-        }
-
-        .stamp {
-            position: absolute;
-            bottom: 100px;
-            right: 80px;
-            opacity: 0.1;
-            transform: rotate(-15deg);
-        }
-
-        .footer {
-            position: absolute;
-            bottom: 40px;
-            left: 60px;
-            right: 60px;
-            text-align: center;
-            font-size: 12px;
-            color: #94a3b8;
-            border-top: 1px solid #f1f5f9;
-            padding-top: 20px;
-        }
-
-        @media print {
-            .sidebar { display: none; }
-            body { padding: 0; background: white; }
-            .preview-area { padding: 0; background: none; }
-            #invoice { box-shadow: none; }
-        }
-    </style>
 </head>
+
 <body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="admin-header">
+                <div class="brand-logo-container">
+                    <img src="logo.png" alt="Hybrid Internet" class="admin-logo">
+                </div>
+                <h1>Control Panel</h1>
+            </div>
 
-<div class="main-layout">
-    <!-- INPUT FORM -->
-    <div class="sidebar">
-        <h2>Invoice Builder</h2>
-        
-        <div class="form-group">
-            <label>Upload Brand Logo</label>
-            <input type="file" id="logo-input" accept="image/*" onchange="loadLogo(event)">
-        </div>
+            <section>
+                <h3>Business Context</h3>
+                <div class="form-group">
+                    <label>Local Vendor Name</label>
+                    <input type="text" id="vendor-name" placeholder="Leave empty for Hybrid Direct">
+                </div>
+                <div class="form-group">
+                    <label>Invoice Number</label>
+                    <input type="text" id="invoice-number" placeholder="e.g. HB/INV/2024/001">
+                </div>
+                <div class="form-group">
+                    <label>Billing Date</label>
+                    <input type="date" id="invoice-date">
+                </div>
+            </section>
 
-        <div class="form-group">
-            <label>Local Vendor/Partner Name</label>
-            <input type="text" id="in_vendor" placeholder="e.g. Rahul Telecom" oninput="draw()">
-        </div>
+            <section>
+                <h3>Client Information</h3>
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="customer-name" placeholder="Full legal name">
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="tel" id="customer-phone" placeholder="10-digit mobile number">
+                </div>
+                <div class="form-group">
+                    <label>Service Address</label>
+                    <textarea id="customer-address" rows="3" placeholder="Full installation address"></textarea>
+                </div>
+            </section>
 
-        <div class="form-group">
-            <label>Customer Name</label>
-            <input type="text" id="in_name" placeholder="Full Name" oninput="draw()">
-        </div>
+            <section>
+                <h3>Plan Configuration</h3>
+                <div class="form-group">
+                    <label>Data Package</label>
+                    <input type="text" id="package-name" placeholder="e.g. Ultra Fiber 100Mbps">
+                </div>
+                <div class="form-group">
+                    <label>Usage Type (Limit)</label>
+                    <select id="data-limit">
+                        <option value="Unlimited Data">Unlimited</option>
+                        <option value="500 GB FUP">500 GB</option>
+                        <option value="1000 GB FUP">1 TB</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Billable Amount (₹)</label>
+                    <input type="number" id="package-price" placeholder="0.00">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                    <input type="checkbox" id="add-gst"
+                        style="width: 20px; height: 20px; accent-color: var(--brand-orange);">
+                    <label style="margin-bottom: 0;">Add 18% GST on top</label>
+                </div>
+            </section>
+        </aside>
 
-        <div class="form-group">
-            <label>Customer Phone</label>
-            <input type="text" id="in_phone" placeholder="Mobile Number" oninput="draw()">
-        </div>
+        <main class="main-content">
+            <div class="top-bar">
+                <button id="print-btn" class="btn" style="background: white; border: 1px solid var(--input-border);">
+                    <span>Print Page</span>
+                </button>
+                <button id="download-btn" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Digital PDF
+                </button>
+            </div>
 
-        <div class="form-group">
-            <label>Package Name</label>
-            <input type="text" id="in_plan" placeholder="Fiber Unlimited 100 Mbps" oninput="draw()">
-        </div>
+            <div class="invoice-wrapper">
+                <div id="invoice-preview" class="invoice-preview">
+                    <!-- Invoice Header -->
+                    <div class="invoice-header">
+                        <div class="company-info">
+                            <img src="logo.png" alt="Hybrid Internet" class="invoice-logo">
+                            <div class="company-meta">
+                                <span id="p-vendor-badge" class="vendor-badge" style="display:none;"></span>
+                                <h2 id="p-company-title">Hybrid Internet</h2>
+                                <p><strong>GST:</strong> 15AADCH9392N1ZX</p>
+                                <p><strong>Website:</strong> isp.hybridinternet.co</p>
+                                <p><strong>Contact:</strong> 8959334650, 9516688921</p>
+                            </div>
+                        </div>
+                        <div class="invoice-status">
+                            <h1>INVOICE</h1>
+                            <div class="status-grid">
+                                <span class="status-label">Invoice #</span>
+                                <span class="status-value" id="p-invoice-num">HB/INV/-</span>
+                                <span class="status-label">Date</span>
+                                <span class="status-value" id="p-invoice-date">-</span>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            <label>Data Limit</label>
-            <input type="text" id="in_limit" placeholder="Unlimited / 3300GB" oninput="draw()">
-        </div>
+                    <!-- Client & Shipping -->
+                    <div class="address-section">
+                        <div class="address-block">
+                            <h4>Billed From</h4>
+                            <div class="name">Hybrid Internet Services</div>
+                            <div class="detail">Head Office: Hybrid HUB, MP, India.<br>GSTIN: 15AADCH9392N1ZX</div>
+                        </div>
+                        <div class="address-block">
+                            <h4>Billed To</h4>
+                            <div class="name" id="p-cust-name">Customer Name</div>
+                            <div class="detail" id="p-cust-addr">Service address will appear here...</div>
+                            <div class="detail" style="margin-top: 10px; font-weight: 600;" id="p-cust-phone"></div>
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            <label>Price (₹)</label>
-            <input type="number" id="in_price" placeholder="Amount" oninput="draw()">
-        </div>
+                    <!-- Table -->
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Service Description</th>
+                                <th>Data Limit</th>
+                                <th style="text-align:right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="item-desc">
+                                    <h5 id="p-pkg-name">Broadband Subscription</h5>
+                                    <p>High-speed fiber connectivity services</p>
+                                </td>
+                                <td id="p-data-limit">Unlimited</td>
+                                <td class="price-cell" style="text-align:right;" id="p-price">₹0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
-        <button class="btn-download" onclick="download()">
-            <span>Download PDF Invoice</span>
-        </button>
+                    <!-- Totals -->
+                    <div class="totals-section">
+                        <div class="totals-table">
+                            <div class="total-row">
+                                <span class="label">Taxable Value</span>
+                                <span class="value" id="p-subtotal">₹0.00</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="label">GST (18%)</span>
+                                <span class="value" id="p-gst-amount">₹0.00</span>
+                            </div>
+                            <div class="total-row grand-total">
+                                <span class="label">Amount Due</span>
+                                <span class="value" id="p-total">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="invoice-footer">
+                        <div class="footer-notes">
+                            <h6>Payment & Legal Terms</h6>
+                            <p>1. Please pay by the due date to avoid service disconnection.<br>
+                                2. This is a computer-generated invoice and doesn't require a physical signature.<br>
+                                3. For support queries: support@hybridinternet.co or call 8959334650.</p>
+                        </div>
+                        <div class="authorized-sign">
+                            <div class="sign-box"></div>
+                            <p>Authorized Signatory</p>
+                            <p style="font-size: 0.7rem; color: #888;">Hybrid Internet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <!-- INVOICE PREVIEW -->
-    <div class="preview-area">
-        <div id="invoice">
-            <div class="inv-header">
-                <img id="logo-preview" src="https://via.placeholder.com/200x80?text=Upload+Logo" alt="Logo">
-                <div class="comp-meta">
-                    <strong>Hybrid Internet</strong><br>
-                    GSTIN: 15AADCH9392N1ZX<br>
-                    Web: isp.hybridinternet.co<br>
-                    Ph: 8959334650, 9516688921
-                </div>
-            </div>
-
-            <h1 style="font-size: 40px; font-weight: 800; color: #f1f5f9; position: absolute; top: 100px; right: 60px; z-index: 0; margin: 0;">INVOICE</h1>
-
-            <div class="bill-grid" style="position: relative; z-index: 1;">
-                <div class="bill-to">
-                    <h3>Billed To</h3>
-                    <p style="font-weight: 700; font-size: 18px; margin: 0;" id="out_name">Customer Name</p>
-                    <p id="out_phone" style="margin: 5px 0;">Phone: -</p>
-                </div>
-                <div class="inv-info">
-                    <h3>Invoice Details</h3>
-                    <p><strong>Date:</strong> <span id="out_date"></span></p>
-                    <p id="vendor_row" style="display:none;"><strong>Partner:</strong> <span id="out_vendor"></span></p>
-                </div>
-            </div>
-
-            <table class="inv-table">
-                <thead>
-                    <tr>
-                        <th width="60%">Description of Service</th>
-                        <th width="20%">Limit</th>
-                        <th width="20%" style="text-align: right;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <span id="out_plan" style="font-weight: 700; font-size: 16px;">Broadband Subscription</span><br>
-                            <small style="color: #64748b;">High Speed Fiber Internet Access</small>
-                        </td>
-                        <td id="out_limit">Unlimited</td>
-                        <td style="text-align: right; font-weight: 700;">₹<span id="out_price">0.00</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="total-box">
-                <div class="total-row">
-                    <span>Subtotal</span>
-                    <span>₹<span id="out_sub">0.00</span></span>
-                </div>
-                <div class="total-row grand-total">
-                    <span>Total Paid</span>
-                    <span>₹<span id="out_total">0.00</span></span>
-                </div>
-            </div>
-
-            <div class="stamp">
-                <h2 style="font-size: 60px; margin: 0;">PAID</h2>
-            </div>
-
-            <div class="footer">
-                <p><strong>Terms:</strong> This is a digitally generated invoice. No signature required. Valid for one billing cycle.</p>
-                <p>© 2024 Hybrid Internet Services. All Rights Reserved.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // Set Date
-    document.getElementById('out_date').innerText = new Date().toLocaleDateString('en-IN', {day: 'numeric', month: 'long', year: 'numeric'});
-
-    // Logo Loader
-    function loadLogo(event) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            document.getElementById('logo-preview').src = reader.result;
-        }
-        reader.readAsDataURL(event.target.files[0]);
-    }
-
-    // Live Sync
-    function draw() {
-        document.getElementById('out_name').innerText = document.getElementById('in_name').value || 'Customer Name';
-        document.getElementById('out_phone').innerText = 'Phone: ' + (document.getElementById('in_phone').value || '-');
-        
-        const vendor = document.getElementById('in_vendor').value;
-        if(vendor) {
-            document.getElementById('vendor_row').style.display = 'block';
-            document.getElementById('out_vendor').innerText = vendor;
-        } else {
-            document.getElementById('vendor_row').style.display = 'none';
-        }
-
-        document.getElementById('out_plan').innerText = document.getElementById('in_plan').value || 'Fiber Subscription Plan';
-        document.getElementById('out_limit').innerText = document.getElementById('in_limit').value || 'Unlimited';
-        
-        const price = parseFloat(document.getElementById('in_price').value) || 0;
-        document.getElementById('out_price').innerText = price.toLocaleString('en-IN');
-        document.getElementById('out_sub').innerText = price.toLocaleString('en-IN');
-        document.getElementById('out_total').innerText = price.toLocaleString('en-IN');
-    }
-
-    // PDF Export
-    function download() {
-        const element = document.getElementById('invoice');
-        const custName = document.getElementById('in_name').value || 'Invoice';
-        const opt = {
-            margin: 0,
-            filename: 'Hybrid_Internet_' + custName + '.pdf',
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 3, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
-    }
-</script>
-
+    <script src="script.js"></script>
 </body>
+
 </html>
