@@ -1,440 +1,191 @@
-:root {
-    --brand-navy: #1e1e4a;
-    --brand-pink: #ff4766;
-    --brand-orange: #ff8a3d;
-    --brand-yellow: #ffc20e;
-    --bg-main: #f0f2f5;
-    --card-bg: rgba(255, 255, 255, 0.95);
-    --input-border: #e0e6ed;
-    --accent-gradient: linear-gradient(135deg, var(--brand-pink), var(--brand-orange));
-    --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.08);
-    --shadow-strong: 0 20px 60px rgba(30, 30, 74, 0.12);
-}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
-body {
-    background-color: var(--bg-main);
-    color: var(--brand-navy);
-    min-height: 100vh;
-    padding: 0;
-}
-/* Dashboard Layout */
-.app-wrapper {
-    display: flex;
-    min-height: 100vh;
-}
-/* Sidebar Styling */
-.sidebar {
-    width: 450px;
-    background: var(--brand-navy);
-    color: white;
-    padding: 40px;
-    height: 100vh;
-    position: fixed;
-    overflow-y: auto;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-    z-index: 100;
-}
-@media (max-width: 1024px) {
-    .app-wrapper {
-        flex-direction: column;
+document.addEventListener('DOMContentLoaded', () => {
+    // Inputs
+    const elements = {
+        vendorName: document.getElementById('vendor-name'),
+        invoiceNum: document.getElementById('invoice-number'),
+        invoiceDate: document.getElementById('invoice-date'),
+        dueDate: document.getElementById('due-date'),
+        custName: document.getElementById('customer-name'),
+        custPhone: document.getElementById('customer-phone'),
+        custAddr: document.getElementById('customer-address'),
+        pkgName: document.getElementById('package-name'),
+        dataLimit: document.getElementById('data-limit'),
+        pkgPrice: document.getElementById('package-price'),
+        ottName: document.getElementById('ott-name'),
+        ottPrice: document.getElementById('ott-price'),
+        iptvName: document.getElementById('iptv-name'),
+        iptvPrice: document.getElementById('iptv-price'),
+        addGst: document.getElementById('add-gst'),
+        upiId: document.getElementById('upi-id')
+    };
+    // Preview Fields
+    const preview = {
+        vendorBadge: document.getElementById('p-vendor-badge'),
+        companyTitle: document.getElementById('p-company-title'),
+        invoiceNum: document.getElementById('p-invoice-num'),
+        invoiceDate: document.getElementById('p-invoice-date'),
+        dueDate: document.getElementById('p-due-date'),
+        custName: document.getElementById('p-cust-name'),
+        custAddr: document.getElementById('p-cust-addr'),
+        custPhone: document.getElementById('p-cust-phone'),
+        pkgName: document.getElementById('p-pkg-name'),
+        dataLimit: document.getElementById('p-data-limit'),
+        price: document.getElementById('p-price'),
+        rowOtt: document.getElementById('row-ott'),
+        ottName: document.getElementById('p-ott-name'),
+        ottPrice: document.getElementById('p-ott-price'),
+        rowIptv: document.getElementById('row-iptv'),
+        iptvName: document.getElementById('p-iptv-name'),
+        iptvPrice: document.getElementById('p-iptv-price'),
+        subtotal: document.getElementById('p-subtotal'),
+        gstAmount: document.getElementById('p-gst-amount'),
+        total: document.getElementById('p-total'),
+        qrUpiText: document.getElementById('qr-upi-text')
+    };
+    const downloadBtn = document.getElementById('download-btn');
+    const printBtn = document.getElementById('print-btn');
+    // Initialize QR Code
+    let qrcodeContainer = document.getElementById("qrcode");
+    let qrcode = new QRCode(qrcodeContainer, {
+        text: "",
+        width: 100,
+        height: 100,
+        colorDark: "#1e1e4a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    // Default Dates
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    elements.invoiceDate.value = todayStr;
+    // Default Due Date (7 days after issue date)
+    const due = new Date(today);
+    due.setDate(due.getDate() + 7);
+    const dueDateStr = due.toISOString().split('T')[0];
+    elements.dueDate.value = dueDateStr;
+    updateText(preview.invoiceDate, formatDate(todayStr));
+    updateText(preview.dueDate, formatDate(dueDateStr));
+    // Live Update Logic
+    Object.keys(elements).forEach(key => {
+        elements[key].addEventListener('input', () => {
+            syncData();
+        });
+    });
+    elements.addGst.addEventListener('change', () => syncData());
+    function syncData() {
+        if (elements.vendorName.value) {
+            preview.vendorBadge.textContent = `Managed by: ${elements.vendorName.value}`;
+            preview.vendorBadge.style.display = 'inline-block';
+        } else {
+            preview.vendorBadge.style.display = 'none';
+        }
+        preview.invoiceNum.textContent = elements.invoiceNum.value || 'HB/INV/-';
+        preview.invoiceDate.textContent = formatDate(elements.invoiceDate.value);
+        preview.dueDate.textContent = formatDate(elements.dueDate.value);
+        preview.custName.textContent = elements.custName.value || 'Customer Name';
+        preview.custAddr.textContent = elements.custAddr.value || 'Service address will appear here...';
+        preview.custPhone.textContent = elements.custPhone.value ? `Ph: +91 ${elements.custPhone.value}` : '';
+        preview.pkgName.textContent = elements.pkgName.value || 'Broadband Subscription';
+        preview.dataLimit.textContent = elements.dataLimit.value;
+        // Pricing Math
+        const internetPrice = parseFloat(elements.pkgPrice.value) || 0;
+        const ottP = parseFloat(elements.ottPrice.value) || 0;
+        const iptvP = parseFloat(elements.iptvPrice.value) || 0;
+        preview.price.textContent = formatCurrency(internetPrice);
+        // Handle OTT
+        if (elements.ottName.value || ottP > 0) {
+            preview.rowOtt.style.display = 'table-row';
+            preview.ottName.textContent = elements.ottName.value || 'OTT Subscription';
+            preview.ottPrice.textContent = formatCurrency(ottP);
+        } else {
+            preview.rowOtt.style.display = 'none';
+        }
+        // Handle IPTV
+        if (elements.iptvName.value || iptvP > 0) {
+            preview.rowIptv.style.display = 'table-row';
+            preview.iptvName.textContent = elements.iptvName.value || 'IPTV Service';
+            preview.iptvPrice.textContent = formatCurrency(iptvP);
+        } else {
+            preview.rowIptv.style.display = 'none';
+        }
+        const subtotal = internetPrice + ottP + iptvP;
+        let gst = 0;
+        let total = subtotal;
+        if (elements.addGst.checked) {
+            gst = subtotal * 0.18;
+            total = subtotal + gst;
+        }
+        preview.subtotal.textContent = formatCurrency(subtotal);
+        preview.gstAmount.textContent = formatCurrency(gst);
+        preview.total.textContent = formatCurrency(total);
+        // Handle QR Code
+        const upiId = elements.upiId.value.trim();
+        if (upiId) {
+            preview.qrUpiText.textContent = upiId;
+            const upiString = `upi://pay?pa=${upiId}&pn=Hybrid%20Internet&am=${total.toFixed(2)}&cu=INR`;
+            qrcode.clear();
+            qrcode.makeCode(upiString);
+        } else {
+            preview.qrUpiText.textContent = 'Enter UPI to generate QR';
+            qrcode.clear();
+            qrcodeContainer.innerHTML = ''; // Ensure canvas is cleared fully
+            qrcode = new QRCode(qrcodeContainer, {
+                text: "",
+                width: 100,
+                height: 100,
+                colorDark: "#1e1e4a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
     }
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding: 30px 20px;
+    // Init display
+    syncData();
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     }
-    .main-content {
-        margin-left: 0 !important;
-        padding: 30px 15px !important;
+    function formatCurrency(num) {
+        return '₹' + num.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
-    .top-bar {
-        justify-content: center !important;
-        flex-wrap: wrap;
+    function updateText(el, text) {
+        if (el) el.textContent = text;
     }
-}
-.sidebar::-webkit-scrollbar {
-    width: 5px;
-}
-.sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-}
-.admin-header {
-    margin-bottom: 40px;
-}
-.brand-logo-container {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    display: inline-block;
-}
-.admin-logo {
-    height: 35px;
-    display: block;
-}
-.sidebar h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    opacity: 0.9;
-}
-.sidebar section {
-    margin-bottom: 35px;
-}
-.sidebar h3 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 20px;
-    color: var(--brand-yellow);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 8px;
-}
-.form-group {
-    margin-bottom: 20px;
-}
-.form-group label {
-    display: block;
-    font-size: 0.85rem;
-    margin-bottom: 8px;
-    opacity: 0.8;
-}
-.sidebar input,
-.sidebar textarea,
-.sidebar select {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 14px 18px;
-    color: white;
-    font-size: 1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sidebar input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
-}
-.sidebar input:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--brand-orange);
-    box-shadow: 0 0 15px rgba(255, 138, 61, 0.2);
-}
-/* Main Content Area */
-.main-content {
-    margin-left: 450px;
-    flex: 1;
-    padding: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.top-bar {
-    width: 100%;
-    max-width: 850px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-.btn {
-    padding: 14px 28px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: none;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.btn-primary {
-    background: var(--accent-gradient);
-    color: white;
-    box-shadow: 0 10px 20px rgba(255, 71, 102, 0.2);
-}
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 30px rgba(255, 71, 102, 0.3);
-}
-/* Invoice Preview Styling */
-.invoice-wrapper {
-    perspective: 1000px;
-}
-.invoice-preview {
-    background: white;
-    width: 800px;
-    min-height: 1120px;
-    padding: 60px 80px;
-    box-shadow: var(--shadow-strong);
-    border-radius: 4px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.5s ease;
-    transform-origin: top center;
-    display: flex;
-    flex-direction: column;
-}
-@media (max-width: 850px) {
-    .invoice-wrapper {
-        width: 100%;
-        overflow-x: auto;
-        padding: 10px;
-        display: flex;
-        justify-content: flex-start;
-    }
-    .invoice-preview {
-        transform: scale(0.6);
-        margin: -200px 0;
-    }
-}
-@media (max-width: 500px) {
-    .invoice-preview {
-        transform: scale(0.4);
-        margin: -350px 0;
-    }
-}
-.invoice-preview::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 8px;
-    background: var(--accent-gradient);
-}
-.invoice-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 60px;
-    align-items: flex-start;
-}
-.invoice-logo {
-    height: 60px;
-    margin-bottom: 25px;
-}
-.company-meta h2 {
-    font-size: 2rem;
-    color: var(--brand-navy);
-    margin-bottom: 5px;
-    font-weight: 800;
-}
-.vendor-badge {
-    display: inline-block;
-    background: var(--bg-main);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--brand-pink);
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.company-meta p {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 2px;
-}
-.invoice-status {
-    text-align: right;
-}
-.invoice-status h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: #f1f3f6;
-    margin-bottom: 10px;
-    line-height: 0.8;
-}
-.status-grid {
-    display: grid;
-    grid-template-columns: auto auto;
-    gap: 10px 20px;
-    font-size: 0.95rem;
-}
-.status-label {
-    color: #888;
-    font-weight: 500;
-}
-.status-value {
-    font-weight: 600;
-    color: var(--brand-navy);
-}
-/* Address Blocks */
-.address-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 60px;
-}
-.address-block h4 {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--brand-pink);
-    margin-bottom: 15px;
-    font-weight: 700;
-}
-.address-block .name {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--brand-navy);
-}
-.address-block .detail {
-    font-size: 0.95rem;
-    color: #555;
-    line-height: 1.5;
-    max-width: 250px;
-}
-/* Table Design */
-.items-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 40px;
-}
-.items-table th {
-    background: #f8f9fb;
-    padding: 18px 20px;
-    text-align: left;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #777;
-    border-bottom: 2px solid var(--bg-main);
-}
-.items-table td {
-    padding: 25px 20px;
-    border-bottom: 1px solid var(--bg-main);
-}
-.item-desc h5 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 5px;
-}
-.item-desc p {
-    font-size: 0.85rem;
-    color: #888;
-}
-.price-cell {
-    font-weight: 700;
-    color: var(--brand-navy);
-}
-/* Payment and Totals Area */
-.payment-and-totals {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 60px;
-}
-.payment-qr {
-    text-align: center;
-    background: #f8f9fb;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px dashed var(--input-border);
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.payment-qr h4 {
-    font-size: 0.8rem;
-    color: var(--brand-navy);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-}
-.payment-qr #qrcode {
-    background: white;
-    padding: 10px;
-    border-radius: 4px;
-    display: inline-block;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-.totals-section {
-    display: flex;
-    justify-content: flex-end;
-}
-.totals-table {
-    width: 300px;
-}
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    font-size: 1rem;
-}
-.total-row.grand-total {
-    margin-top: 15px;
-    padding: 20px 0;
-    border-top: 2px solid var(--bg-main);
-    font-size: 1.5rem;
-}
-.grand-total .label {
-    font-weight: 800;
-    color: var(--brand-navy);
-}
-.grand-total .value {
-    color: var(--brand-pink);
-    font-weight: 900;
-}
-/* Footer Styling */
-.invoice-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    border-top: 1px solid var(--bg-main);
-    padding-top: 40px;
-    margin-top: auto;
-}
-.footer-notes {
-    max-width: 400px;
-}
-.footer-notes h6 {
-    font-size: 0.9rem;
-    margin-bottom: 12px;
-    font-weight: 700;
-}
-.footer-notes p {
-    font-size: 0.8rem;
-    color: #888;
-    line-height: 1.6;
-}
-.authorized-sign {
-    text-align: center;
-}
-.sign-box {
-    width: 180px;
-    height: 60px;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 10px;
-}
-.authorized-sign p {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--brand-navy);
-}
-@media print {
-    .sidebar,
-    .top-bar {
-        display: none;
-    }
-    .main-content {
-        margin-left: 0;
-        padding: 0;
-    }
-    .invoice-preview {
-        box-shadow: none;
-        border: none;
-    }
-}
+    // Export Logic
+    downloadBtn.addEventListener('click', () => {
+        const element = document.getElementById('invoice-preview');
+        // Remove transform before capture (especially important for mobile scaling)
+        const originalTransform = element.style.transform;
+        element.style.transform = 'none';
+        element.style.margin = '0';
+        const opt = {
+            margin: 0,
+            filename: `Hybrid_Invoice_${elements.custName.value || 'Client'}.pdf`,
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                letterRendering: true,
+                scrollY: 0,
+                scrollX: 0
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: 'avoid-all' } // This helps prevent splitting
+        };
+        downloadBtn.innerHTML = '<span>Processing...</span>';
+        html2pdf().from(element).set(opt).save().then(() => {
+            // Restore styling
+            element.style.transform = originalTransform;
+            downloadBtn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Download Digital PDF`;
+        });
+    });
+    printBtn.addEventListener('click', () => {
+        window.print();
+    });
+});
