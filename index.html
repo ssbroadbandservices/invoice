@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,9 +20,13 @@
         <aside class="sidebar">
             <div class="admin-header">
                 <div class="brand-logo-container">
-                    <img src="logo.png" alt="Hybrid Internet" class="admin-logo" onerror="this.src='https://placehold.co/150x35?text=Logo';">
+                    <img src="logo.png" alt="Hybrid Internet" class="admin-logo"
+                        onerror="this.src='https://placehold.co/150x35?text=Logo';">
                 </div>
                 <h1>Control Panel</h1>
+                <a href="operator.html"
+                    style="color:var(--brand-yellow); text-decoration:none; font-size: 0.8rem; display: inline-block; margin-top: 10px; font-weight: 500;">Switch
+                    to Operator Invoice &rarr;</a>
             </div>
 
             <section>
@@ -79,8 +84,10 @@
                     <input type="number" id="package-price" placeholder="0.00">
                 </div>
 
-                <h4 style="margin-top: 25px; margin-bottom: 10px; font-size: 0.8rem; color: var(--brand-orange); text-transform: uppercase;">Value Added Services</h4>
-                
+                <h4
+                    style="margin-top: 25px; margin-bottom: 10px; font-size: 0.8rem; color: var(--brand-orange); text-transform: uppercase;">
+                    Value Added Services</h4>
+
                 <div class="form-group">
                     <label>OTT Add-on Name</label>
                     <input type="text" id="ott-name" placeholder="e.g. Netflix + Prime (Leave empty if none)">
@@ -136,7 +143,8 @@
                     <!-- Invoice Header -->
                     <div class="invoice-header">
                         <div class="company-info">
-                            <img src="logo.png" alt="Hybrid Internet" class="invoice-logo" onerror="this.src='https://placehold.co/150x50?text=Hybrid+Internet';">
+                            <img src="logo.png" alt="Hybrid Internet" class="invoice-logo"
+                                onerror="this.src='https://placehold.co/150x50?text=Hybrid+Internet';">
                             <div class="company-meta">
                                 <span id="p-vendor-badge" class="vendor-badge" style="display:none;"></span>
                                 <h2 id="p-company-title">Hybrid Internet</h2>
@@ -163,7 +171,7 @@
                         <div class="address-block">
                             <h4>Billed From</h4>
                             <div class="name">Hybrid Internet Services</div>
-                            <div class="detail">Head Office: Hybrid Internet, Indore MP, India.<br>GSTIN: 15AADCH9392N1ZX</div>
+                            <div class="detail">Head Office: Hybrid HUB, MP, India.<br>GSTIN: 15AADCH9392N1ZX</div>
                         </div>
                         <div class="address-block">
                             <h4>Billed To</h4>
@@ -215,7 +223,9 @@
                         <div class="payment-qr">
                             <h4>Scan to Pay</h4>
                             <div id="qrcode"></div>
-                            <p id="qr-upi-text" style="font-size: 0.75rem; margin-top: 8px; color: #666; word-break: break-all; max-width: 140px;"></p>
+                            <p id="qr-upi-text"
+                                style="font-size: 0.75rem; margin-top: 8px; color: #666; word-break: break-all; max-width: 140px;">
+                            </p>
                         </div>
                         <div class="totals-section">
                             <div class="totals-table">
