@@ -4,128 +4,164 @@ document.addEventListener('DOMContentLoaded', () => {
         vendorName: document.getElementById('vendor-name'),
         invoiceNum: document.getElementById('invoice-number'),
         invoiceDate: document.getElementById('invoice-date'),
+        dueDate: document.getElementById('due-date'),
         custName: document.getElementById('customer-name'),
         custPhone: document.getElementById('customer-phone'),
         custAddr: document.getElementById('customer-address'),
         pkgName: document.getElementById('package-name'),
         dataLimit: document.getElementById('data-limit'),
         pkgPrice: document.getElementById('package-price'),
-        addGst: document.getElementById('add-gst')
+        ottName: document.getElementById('ott-name'),
+        ottPrice: document.getElementById('ott-price'),
+        iptvName: document.getElementById('iptv-name'),
+        iptvPrice: document.getElementById('iptv-price'),
+        addGst: document.getElementById('add-gst'),
+        upiId: document.getElementById('upi-id')
     };
-
     // Preview Fields
     const preview = {
         vendorBadge: document.getElementById('p-vendor-badge'),
         companyTitle: document.getElementById('p-company-title'),
         invoiceNum: document.getElementById('p-invoice-num'),
         invoiceDate: document.getElementById('p-invoice-date'),
+        dueDate: document.getElementById('p-due-date'),
         custName: document.getElementById('p-cust-name'),
         custAddr: document.getElementById('p-cust-addr'),
         custPhone: document.getElementById('p-cust-phone'),
         pkgName: document.getElementById('p-pkg-name'),
         dataLimit: document.getElementById('p-data-limit'),
         price: document.getElementById('p-price'),
+        rowOtt: document.getElementById('row-ott'),
+        ottName: document.getElementById('p-ott-name'),
+        ottPrice: document.getElementById('p-ott-price'),
+        rowIptv: document.getElementById('row-iptv'),
+        iptvName: document.getElementById('p-iptv-name'),
+        iptvPrice: document.getElementById('p-iptv-price'),
         subtotal: document.getElementById('p-subtotal'),
         gstAmount: document.getElementById('p-gst-amount'),
-        total: document.getElementById('p-total')
+        total: document.getElementById('p-total'),
+        qrUpiText: document.getElementById('qr-upi-text')
     };
-
     const downloadBtn = document.getElementById('download-btn');
     const printBtn = document.getElementById('print-btn');
-
-    // Default Date
-    const today = new Date().toISOString().split('T')[0];
-    elements.invoiceDate.value = today;
-    updateText(preview.invoiceDate, formatDate(today));
-
+    // Initialize QR Code
+    let qrcodeContainer = document.getElementById("qrcode");
+    let qrcode = new QRCode(qrcodeContainer, {
+        text: "",
+        width: 100,
+        height: 100,
+        colorDark: "#1e1e4a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    // Default Dates
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    elements.invoiceDate.value = todayStr;
+    // Default Due Date (7 days after issue date)
+    const due = new Date(today);
+    due.setDate(due.getDate() + 7);
+    const dueDateStr = due.toISOString().split('T')[0];
+    elements.dueDate.value = dueDateStr;
+    updateText(preview.invoiceDate, formatDate(todayStr));
+    updateText(preview.dueDate, formatDate(dueDateStr));
     // Live Update Logic
     Object.keys(elements).forEach(key => {
         elements[key].addEventListener('input', () => {
-            syncData(key);
+            syncData();
         });
     });
-
-    // Special listener for checkbox as it doesn't trigger 'input' in some browsers or is better as 'change'
-    elements.addGst.addEventListener('change', () => syncData('pkgPrice'));
-
-    function syncData(key) {
-        const val = elements[key].value;
-
-        switch (key) {
-            case 'vendorName':
-                if (val) {
-                    preview.vendorBadge.textContent = `Managed by: ${val}`;
-                    preview.vendorBadge.style.display = 'inline-block';
-                } else {
-                    preview.vendorBadge.style.display = 'none';
-                }
-                break;
-            case 'invoiceNum':
-                preview.invoiceNum.textContent = val || 'HB/INV/-';
-                break;
-            case 'invoiceDate':
-                preview.invoiceDate.textContent = formatDate(val);
-                break;
-            case 'custName':
-                preview.custName.textContent = val || 'Customer Name';
-                break;
-            case 'custAddr':
-                preview.custAddr.textContent = val || 'Service address will appear here...';
-                break;
-            case 'custPhone':
-                preview.custPhone.textContent = val ? `Ph: +91 ${val}` : '';
-                break;
-            case 'pkgName':
-                preview.pkgName.textContent = val || 'Broadband Subscription';
-                break;
-            case 'dataLimit':
-                preview.dataLimit.textContent = val;
-                break;
-            case 'pkgPrice':
-            case 'addGst':
-                const basePrice = parseFloat(elements.pkgPrice.value) || 0;
-                let gst = 0;
-                let total = basePrice;
-
-                if (elements.addGst.checked) {
-                    gst = basePrice * 0.18;
-                    total = basePrice + gst;
-                }
-
-                preview.price.textContent = formatCurrency(basePrice);
-                preview.subtotal.textContent = formatCurrency(basePrice);
-                preview.gstAmount.textContent = formatCurrency(gst);
-                preview.total.textContent = formatCurrency(total);
-                break;
+    elements.addGst.addEventListener('change', () => syncData());
+    function syncData() {
+        if (elements.vendorName.value) {
+            preview.vendorBadge.textContent = `Managed by: ${elements.vendorName.value}`;
+            preview.vendorBadge.style.display = 'inline-block';
+        } else {
+            preview.vendorBadge.style.display = 'none';
+        }
+        preview.invoiceNum.textContent = elements.invoiceNum.value || 'HB/INV/-';
+        preview.invoiceDate.textContent = formatDate(elements.invoiceDate.value);
+        preview.dueDate.textContent = formatDate(elements.dueDate.value);
+        preview.custName.textContent = elements.custName.value || 'Customer Name';
+        preview.custAddr.textContent = elements.custAddr.value || 'Service address will appear here...';
+        preview.custPhone.textContent = elements.custPhone.value ? `Ph: +91 ${elements.custPhone.value}` : '';
+        preview.pkgName.textContent = elements.pkgName.value || 'Broadband Subscription';
+        preview.dataLimit.textContent = elements.dataLimit.value;
+        // Pricing Math
+        const internetPrice = parseFloat(elements.pkgPrice.value) || 0;
+        const ottP = parseFloat(elements.ottPrice.value) || 0;
+        const iptvP = parseFloat(elements.iptvPrice.value) || 0;
+        preview.price.textContent = formatCurrency(internetPrice);
+        // Handle OTT
+        if (elements.ottName.value || ottP > 0) {
+            preview.rowOtt.style.display = 'table-row';
+            preview.ottName.textContent = elements.ottName.value || 'OTT Subscription';
+            preview.ottPrice.textContent = formatCurrency(ottP);
+        } else {
+            preview.rowOtt.style.display = 'none';
+        }
+        // Handle IPTV
+        if (elements.iptvName.value || iptvP > 0) {
+            preview.rowIptv.style.display = 'table-row';
+            preview.iptvName.textContent = elements.iptvName.value || 'IPTV Service';
+            preview.iptvPrice.textContent = formatCurrency(iptvP);
+        } else {
+            preview.rowIptv.style.display = 'none';
+        }
+        const subtotal = internetPrice + ottP + iptvP;
+        let gst = 0;
+        let total = subtotal;
+        if (elements.addGst.checked) {
+            gst = subtotal * 0.18;
+            total = subtotal + gst;
+        }
+        preview.subtotal.textContent = formatCurrency(subtotal);
+        preview.gstAmount.textContent = formatCurrency(gst);
+        preview.total.textContent = formatCurrency(total);
+        // Handle QR Code
+        const upiId = elements.upiId.value.trim();
+        if (upiId) {
+            preview.qrUpiText.textContent = upiId;
+            const upiString = `upi://pay?pa=${upiId}&pn=Hybrid%20Internet&am=${total.toFixed(2)}&cu=INR`;
+            qrcode.clear();
+            qrcode.makeCode(upiString);
+        } else {
+            preview.qrUpiText.textContent = 'Enter UPI to generate QR';
+            qrcode.clear();
+            qrcodeContainer.innerHTML = ''; // Ensure canvas is cleared fully
+            qrcode = new QRCode(qrcodeContainer, {
+                text: "",
+                width: 100,
+                height: 100,
+                colorDark: "#1e1e4a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
         }
     }
-
+    // Init display
+    syncData();
     function formatDate(dateStr) {
         if (!dateStr) return '-';
         const d = new Date(dateStr);
         return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     }
-
     function formatCurrency(num) {
         return '₹' + num.toLocaleString('en-IN', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
     }
-
     function updateText(el, text) {
         if (el) el.textContent = text;
     }
-
     // Export Logic
     downloadBtn.addEventListener('click', () => {
         const element = document.getElementById('invoice-preview');
-
         // Remove transform before capture (especially important for mobile scaling)
         const originalTransform = element.style.transform;
         element.style.transform = 'none';
         element.style.margin = '0';
-
         const opt = {
             margin: 0,
             filename: `Hybrid_Invoice_${elements.custName.value || 'Client'}.pdf`,
@@ -140,9 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: 'avoid-all' } // This helps prevent splitting
         };
-
         downloadBtn.innerHTML = '<span>Processing...</span>';
-
         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
             // Additional check to ensure only one page exists
             const totalPages = pdf.internal.getNumberOfPages();
@@ -159,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 Download Digital PDF`;
         });
     });
-
     printBtn.addEventListener('click', () => {
         window.print();
     });
