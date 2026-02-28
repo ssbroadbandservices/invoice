@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Internet | Operator Invoice</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+        .section-header h3 {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+        .add-btn {
+            background: var(--brand-orange);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .add-btn:hover {
+            background: #ff7012;
+            transform: scale(1.05);
+        }
+        .dynamic-entry {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+        .dynamic-entry .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4766;
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            font-weight: bold;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .dynamic-entry .remove-btn:hover {
+            transform: scale(1.1);
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .items-table th:nth-child(2),
+        .items-table td:nth-child(2),
+        .items-table th:nth-child(3),
+        .items-table td:nth-child(3) {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="admin-header">
+                <div class="brand-logo-container">
+                    <img src="logo.png" alt="Hybrid Internet" class="admin-logo"
+                        onerror="this.src='https://placehold.co/150x35?text=Logo';">
+                </div>
+                <h1>Operator Panel</h1>
+                <a href="index.html"
+                    style="color:var(--brand-yellow); text-decoration:none; font-size: 0.8rem; display: inline-block; margin-top: 10px; font-weight: 500;">&larr;
+                    Switch to Customer Invoice</a>
+            </div>
+            <section>
+                <h3>Business Context</h3>
+                <div class="form-group">
+                    <label>Invoice Number</label>
+                    <input type="text" id="invoice-number" placeholder="e.g. HB/OP/2024/001">
+                </div>
+                <div class="form-group">
+                    <label>Issue Date</label>
+                    <input type="date" id="invoice-date">
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="due-date">
+                </div>
+            </section>
+            <section>
+                <h3>Operator Details</h3>
+                <div class="form-group">
+                    <label>Operator Name</label>
+                    <input type="text" id="operator-name" placeholder="Full name">
+                </div>
+                <div class="form-group">
+                    <label>Firm Name</label>
+                    <input type="text" id="firm-name" placeholder="e.g. SS Broadband Services">
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="tel" id="operator-phone" placeholder="10-digit mobile number">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="operator-address" rows="3" placeholder="Full address"></textarea>
+                </div>
+            </section>
+            <section>
+                <div class="section-header">
+                    <h3>Internet Packages</h3>
+                    <button id="add-net-btn" class="add-btn" title="Add Package">+</button>
+                </div>
+                <div id="net-container"></div>
+            </section>
+            <section>
+                <div class="section-header">
+                    <h3>OTT Services</h3>
+                    <button id="add-ott-btn" class="add-btn" title="Add OTT">+</button>
+                </div>
+                <div id="ott-container"></div>
+            </section>
+            <section>
+                <div class="section-header">
+                    <h3>IPTV Services</h3>
+                    <button id="add-iptv-btn" class="add-btn" title="Add IPTV">+</button>
+                </div>
+                <div id="iptv-container"></div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 25px;">
+                    <input type="checkbox" id="add-gst"
+                        style="width: 20px; height: 20px; accent-color: var(--brand-orange);">
+                    <label style="margin-bottom: 0;">Add 18% GST on top</label>
+                </div>
+            </section>
+            <section>
+                <h3>Payment Configuration</h3>
+                <div class="form-group">
+                    <label>UPI ID (For QR Code)</label>
+                    <input type="text" id="upi-id" placeholder="e.g. yourname@okicici">
+                </div>
+            </section>
+        </aside>
+        <main class="main-content">
+            <div class="top-bar">
+                <button id="print-btn" class="btn" style="background: white; border: 1px solid var(--input-border);">
+                    <span>Print Page</span>
+                </button>
+                <button id="download-btn" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Digital PDF
+                </button>
+            </div>
+            <div class="invoice-wrapper">
+                <div id="invoice-preview" class="invoice-preview">
+                    <!-- Invoice Header -->
+                    <div class="invoice-header">
+                        <div class="company-info">
+                            <img src="logo.png" alt="Hybrid Internet" class="invoice-logo"
+                                onerror="this.src='https://placehold.co/150x50?text=Hybrid+Internet';">
+                            <div class="company-meta">
+                                <span class="vendor-badge"
+                                    style="display:inline-block; background: var(--brand-orange); color: white;">OPERATOR
+                                    INVOICE</span>
+                                <h2 id="p-company-title">Hybrid Internet</h2>
+                                <p><strong>GST:</strong> 15AADCH9392N1ZX</p>
+                                <p><strong>Website:</strong> isp.hybridinternet.co</p>
+                                <p><strong>Contact:</strong> 8959334650, 9516688921</p>
+                            </div>
+                        </div>
+                        <div class="invoice-status">
+                            <h1>INVOICE</h1>
+                            <div class="status-grid">
+                                <span class="status-label">Invoice #</span>
+                                <span class="status-value" id="p-invoice-num">HB/OP/-</span>
+                                <span class="status-label">Issue Date</span>
+                                <span class="status-value" id="p-invoice-date">-</span>
+                                <span class="status-label">Due Date</span>
+                                <span class="status-value" id="p-due-date">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Client & Shipping -->
+                    <div class="address-section">
+                        <div class="address-block">
+                            <h4>Billed From</h4>
+                            <div class="name">Hybrid Internet Services</div>
+                            <div class="detail">Head Office: Hybrid HUB, MP, India.<br>GSTIN: 15AADCH9392N1ZX</div>
+                        </div>
+                        <div class="address-block">
+                            <h4>Billed To</h4>
+                            <div class="name" id="p-firm-name">Operator Firm Name</div>
+                            <div class="detail" style="font-weight: 500; color: var(--brand-navy); margin-bottom: 5px;"
+                                id="p-op-name">Operator Name</div>
+                            <div class="detail" id="p-op-addr">Address will appear here...</div>
+                            <div class="detail" style="margin-top: 5px; font-weight: 600;" id="p-op-phone"></div>
+                        </div>
+                    </div>
+                    <!-- Table -->
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Service Description</th>
+                                <th>Rate (₹)</th>
+                                <th>Users</th>
+                                <th style="text-align:right;">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="p-items-body">
+                            <!-- Dynamic rows will inject here -->
+                        </tbody>
+                    </table>
+                    <!-- Totals and Payment QR -->
+                    <div class="payment-and-totals">
+                        <div class="payment-qr">
+                            <h4>Scan to Pay</h4>
+                            <div id="qrcode"></div>
+                            <p id="qr-upi-text"
+                                style="font-size: 0.75rem; margin-top: 8px; color: #666; word-break: break-all; max-width: 140px;">
+                            </p>
+                        </div>
+                        <div class="totals-section">
+                            <div class="totals-table">
+                                <div class="total-row">
+                                    <span class="label">Taxable Value</span>
+                                    <span class="value" id="p-subtotal">₹0.00</span>
+                                </div>
+                                <div class="total-row">
+                                    <span class="label">GST (18%)</span>
+                                    <span class="value" id="p-gst-amount">₹0.00</span>
+                                </div>
+                                <div class="total-row grand-total">
+                                    <span class="label">Amount Due</span>
+                                    <span class="value" id="p-total">₹0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div class="invoice-footer">
+                        <div class="footer-notes">
+                            <h6>Payment & Legal Terms</h6>
+                            <p>1. Please pay by the due date to avoid service disconnection.<br>
+                                2. This is a computer-generated invoice and doesn't require a physical signature.<br>
+                                3. For support queries: support@hybridinternet.co or call 8959334650.</p>
+                        </div>
+                        <div class="authorized-sign">
+                            <div class="sign-box"></div>
+                            <p>Authorized Signatory</p>
+                            <p style="font-size: 0.7rem; color: #888;">Hybrid Internet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="operator-script.js"></script>
+</body>
+</html>
