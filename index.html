@@ -10,18 +10,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-
 <body>
     <div class="app-wrapper">
         <aside class="sidebar">
             <div class="admin-header">
                 <div class="brand-logo-container">
-                    <img src="logo.png" alt="Hybrid Internet" class="admin-logo">
+                    <img src="logo.png" alt="Hybrid Internet" class="admin-logo" onerror="this.src='https://placehold.co/150x35?text=Logo';">
                 </div>
                 <h1>Control Panel</h1>
             </div>
-
             <section>
                 <h3>Business Context</h3>
                 <div class="form-group">
@@ -33,11 +33,14 @@
                     <input type="text" id="invoice-number" placeholder="e.g. HB/INV/2024/001">
                 </div>
                 <div class="form-group">
-                    <label>Billing Date</label>
+                    <label>Issue Date</label>
                     <input type="date" id="invoice-date">
                 </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="due-date">
+                </div>
             </section>
-
             <section>
                 <h3>Client Information</h3>
                 <div class="form-group">
@@ -53,7 +56,6 @@
                     <textarea id="customer-address" rows="3" placeholder="Full installation address"></textarea>
                 </div>
             </section>
-
             <section>
                 <h3>Plan Configuration</h3>
                 <div class="form-group">
@@ -69,17 +71,41 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Billable Amount (₹)</label>
+                    <label>Internet Amount (₹)</label>
                     <input type="number" id="package-price" placeholder="0.00">
                 </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <h4 style="margin-top: 25px; margin-bottom: 10px; font-size: 0.8rem; color: var(--brand-orange); text-transform: uppercase;">Value Added Services</h4>
+                
+                <div class="form-group">
+                    <label>OTT Add-on Name</label>
+                    <input type="text" id="ott-name" placeholder="e.g. Netflix + Prime (Leave empty if none)">
+                </div>
+                <div class="form-group">
+                    <label>OTT Amount (₹)</label>
+                    <input type="number" id="ott-price" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>IPTV Add-on Name</label>
+                    <input type="text" id="iptv-name" placeholder="e.g. Premium Live TV (Leave empty if none)">
+                </div>
+                <div class="form-group">
+                    <label>IPTV Amount (₹)</label>
+                    <input type="number" id="iptv-price" placeholder="0.00">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
                     <input type="checkbox" id="add-gst"
                         style="width: 20px; height: 20px; accent-color: var(--brand-orange);">
                     <label style="margin-bottom: 0;">Add 18% GST on top</label>
                 </div>
             </section>
+            <section>
+                <h3>Payment Configuration</h3>
+                <div class="form-group">
+                    <label>UPI ID (For QR Code)</label>
+                    <input type="text" id="upi-id" placeholder="e.g. yourname@okicici">
+                </div>
+            </section>
         </aside>
-
         <main class="main-content">
             <div class="top-bar">
                 <button id="print-btn" class="btn" style="background: white; border: 1px solid var(--input-border);">
@@ -95,13 +121,12 @@
                     Download Digital PDF
                 </button>
             </div>
-
             <div class="invoice-wrapper">
                 <div id="invoice-preview" class="invoice-preview">
                     <!-- Invoice Header -->
                     <div class="invoice-header">
                         <div class="company-info">
-                            <img src="logo.png" alt="Hybrid Internet" class="invoice-logo">
+                            <img src="logo.png" alt="Hybrid Internet" class="invoice-logo" onerror="this.src='https://placehold.co/150x50?text=Hybrid+Internet';">
                             <div class="company-meta">
                                 <span id="p-vendor-badge" class="vendor-badge" style="display:none;"></span>
                                 <h2 id="p-company-title">Hybrid Internet</h2>
@@ -115,12 +140,13 @@
                             <div class="status-grid">
                                 <span class="status-label">Invoice #</span>
                                 <span class="status-value" id="p-invoice-num">HB/INV/-</span>
-                                <span class="status-label">Date</span>
+                                <span class="status-label">Issue Date</span>
                                 <span class="status-value" id="p-invoice-date">-</span>
+                                <span class="status-label">Due Date</span>
+                                <span class="status-value" id="p-due-date">-</span>
                             </div>
                         </div>
                     </div>
-
                     <!-- Client & Shipping -->
                     <div class="address-section">
                         <div class="address-block">
@@ -135,18 +161,17 @@
                             <div class="detail" style="margin-top: 10px; font-weight: 600;" id="p-cust-phone"></div>
                         </div>
                     </div>
-
                     <!-- Table -->
                     <table class="items-table">
                         <thead>
                             <tr>
                                 <th>Service Description</th>
-                                <th>Data Limit</th>
+                                <th>Details</th>
                                 <th style="text-align:right;">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr id="row-internet">
                                 <td class="item-desc">
                                     <h5 id="p-pkg-name">Broadband Subscription</h5>
                                     <p>High-speed fiber connectivity services</p>
@@ -154,27 +179,48 @@
                                 <td id="p-data-limit">Unlimited</td>
                                 <td class="price-cell" style="text-align:right;" id="p-price">₹0.00</td>
                             </tr>
+                            <tr id="row-ott" style="display: none;">
+                                <td class="item-desc">
+                                    <h5 id="p-ott-name">OTT Subscription</h5>
+                                    <p>Premium Entertainment Apps</p>
+                                </td>
+                                <td>VAS</td>
+                                <td class="price-cell" style="text-align:right;" id="p-ott-price">₹0.00</td>
+                            </tr>
+                            <tr id="row-iptv" style="display: none;">
+                                <td class="item-desc">
+                                    <h5 id="p-iptv-name">IPTV Service</h5>
+                                    <p>Live TV Channels</p>
+                                </td>
+                                <td>VAS</td>
+                                <td class="price-cell" style="text-align:right;" id="p-iptv-price">₹0.00</td>
+                            </tr>
                         </tbody>
                     </table>
-
-                    <!-- Totals -->
-                    <div class="totals-section">
-                        <div class="totals-table">
-                            <div class="total-row">
-                                <span class="label">Taxable Value</span>
-                                <span class="value" id="p-subtotal">₹0.00</span>
-                            </div>
-                            <div class="total-row">
-                                <span class="label">GST (18%)</span>
-                                <span class="value" id="p-gst-amount">₹0.00</span>
-                            </div>
-                            <div class="total-row grand-total">
-                                <span class="label">Amount Due</span>
-                                <span class="value" id="p-total">₹0.00</span>
+                    <!-- Totals and Payment QR -->
+                    <div class="payment-and-totals">
+                        <div class="payment-qr">
+                            <h4>Scan to Pay</h4>
+                            <div id="qrcode"></div>
+                            <p id="qr-upi-text" style="font-size: 0.75rem; margin-top: 8px; color: #666; word-break: break-all; max-width: 140px;"></p>
+                        </div>
+                        <div class="totals-section">
+                            <div class="totals-table">
+                                <div class="total-row">
+                                    <span class="label">Taxable Value</span>
+                                    <span class="value" id="p-subtotal">₹0.00</span>
+                                </div>
+                                <div class="total-row">
+                                    <span class="label">GST (18%)</span>
+                                    <span class="value" id="p-gst-amount">₹0.00</span>
+                                </div>
+                                <div class="total-row grand-total">
+                                    <span class="label">Amount Due</span>
+                                    <span class="value" id="p-total">₹0.00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-
                     <!-- Footer -->
                     <div class="invoice-footer">
                         <div class="footer-notes">
@@ -195,5 +241,4 @@
     </div>
     <script src="script.js"></script>
 </body>
-
 </html>
