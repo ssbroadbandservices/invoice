@@ -177,15 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pagebreak: { mode: 'avoid-all' } // This helps prevent splitting
         };
         downloadBtn.innerHTML = '<span>Processing...</span>';
-        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-            // Additional check to ensure only one page exists
-            const totalPages = pdf.internal.getNumberOfPages();
-            if (totalPages > 1) {
-                for (let i = totalPages; i > 1; i--) {
-                    pdf.deletePage(i);
-                }
-            }
-        }).save().then(() => {
+        html2pdf().from(element).set(opt).save().then(() => {
             // Restore styling
             element.style.transform = originalTransform;
             downloadBtn.innerHTML = `
