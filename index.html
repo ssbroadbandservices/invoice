@@ -13,6 +13,7 @@
     <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
+
 <body>
     <div class="app-wrapper">
         <aside class="sidebar">
@@ -22,6 +23,7 @@
                 </div>
                 <h1>Control Panel</h1>
             </div>
+
             <section>
                 <h3>Business Context</h3>
                 <div class="form-group">
@@ -41,6 +43,7 @@
                     <input type="date" id="due-date">
                 </div>
             </section>
+
             <section>
                 <h3>Client Information</h3>
                 <div class="form-group">
@@ -56,6 +59,7 @@
                     <textarea id="customer-address" rows="3" placeholder="Full installation address"></textarea>
                 </div>
             </section>
+
             <section>
                 <h3>Plan Configuration</h3>
                 <div class="form-group">
@@ -74,6 +78,7 @@
                     <label>Internet Amount (₹)</label>
                     <input type="number" id="package-price" placeholder="0.00">
                 </div>
+
                 <h4 style="margin-top: 25px; margin-bottom: 10px; font-size: 0.8rem; color: var(--brand-orange); text-transform: uppercase;">Value Added Services</h4>
                 
                 <div class="form-group">
@@ -84,6 +89,7 @@
                     <label>OTT Amount (₹)</label>
                     <input type="number" id="ott-price" placeholder="0.00">
                 </div>
+
                 <div class="form-group">
                     <label>IPTV Add-on Name</label>
                     <input type="text" id="iptv-name" placeholder="e.g. Premium Live TV (Leave empty if none)">
@@ -92,12 +98,14 @@
                     <label>IPTV Amount (₹)</label>
                     <input type="number" id="iptv-price" placeholder="0.00">
                 </div>
+
                 <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
                     <input type="checkbox" id="add-gst"
                         style="width: 20px; height: 20px; accent-color: var(--brand-orange);">
                     <label style="margin-bottom: 0;">Add 18% GST on top</label>
                 </div>
             </section>
+
             <section>
                 <h3>Payment Configuration</h3>
                 <div class="form-group">
@@ -106,6 +114,7 @@
                 </div>
             </section>
         </aside>
+
         <main class="main-content">
             <div class="top-bar">
                 <button id="print-btn" class="btn" style="background: white; border: 1px solid var(--input-border);">
@@ -121,6 +130,7 @@
                     Download Digital PDF
                 </button>
             </div>
+
             <div class="invoice-wrapper">
                 <div id="invoice-preview" class="invoice-preview">
                     <!-- Invoice Header -->
@@ -147,6 +157,7 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- Client & Shipping -->
                     <div class="address-section">
                         <div class="address-block">
@@ -161,6 +172,7 @@
                             <div class="detail" style="margin-top: 10px; font-weight: 600;" id="p-cust-phone"></div>
                         </div>
                     </div>
+
                     <!-- Table -->
                     <table class="items-table">
                         <thead>
@@ -197,6 +209,7 @@
                             </tr>
                         </tbody>
                     </table>
+
                     <!-- Totals and Payment QR -->
                     <div class="payment-and-totals">
                         <div class="payment-qr">
@@ -221,6 +234,7 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- Footer -->
                     <div class="invoice-footer">
                         <div class="footer-notes">
@@ -241,4 +255,5 @@
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
